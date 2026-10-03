@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Our Universe - 3D Solar System 1st Anniversary</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&family=Charm:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    * {
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #020208;
+      font-family: 'Sarabun', sans-serif;
+      color: #ffffff;
+    }
+    .font-romantic {
+      font-family: 'Charm', cursive;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 182, 193, 0.3);
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 182, 193, 0.6);
+    }
+    .glass-panel {
+      background: rgba(15, 10, 30, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 192, 203, 0.22);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(255, 105, 180, 0.12);
+    }
+    .glass-button {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 182, 193, 0.3);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .glass-button:hover {
+      background: rgba(255, 105, 180, 0.3);
+      border-color: rgba(255, 182, 193, 0.7);
+      box-shadow: 0 0 18px rgba(255, 105, 180, 0.5);
+      transform: translateY(-2px);
+    }
+    .glass-button:active {
+      transform: translateY(0);
+    }
+    @keyframes pulse-glow {
+      0%, 100% { filter: drop-shadow(0 0 15px rgba(255, 105, 180, 0.6)); }
+      50% { filter: drop-shadow(0 0 30px rgba(255, 182, 193, 0.95)); }
+    }
+    .pulse-glow {
+      animation: pulse-glow 3s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="w-screen h-screen relative overflow-hidden bg-black select-none">
+
+  <canvas id="universeCanvas" class="absolute inset-0 w-full h-full z-0 cursor-grab active:cursor-grabbing"></canvas>
+
+  <div class="relative z-10 w-full h-full pointer-events-none flex flex-col justify-between p-4 md:p-6">
+    
+    <!-- Top Header -->
+    <header class="flex flex-col md:flex-row justify-between items-center gap-4 w-full max-w-7xl mx-auto pointer-events-auto">
+      <div class="glass-panel rounded-2xl px-6 py-3 text-center md:text-left flex items-center gap-4">
+        <div class="w-12 h-12 rounded-full bg-pink-500/20 border border-pink-400/40 flex items-center justify-center text-pink-300 text-2xl pulse-glow">
+          <i class="fa-solid fa-heart"></i>
+        </div>
+        <div>
+          <h1 class="text-2xl md:text-3xl font-bold font-romantic text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-purple-200 to-indigo-300">
+            Our Universe - 1st Anniversary
+          </h1>
+          <p class="text-xs md:text-sm text-pink-200/70 tracking-widest uppercase">
+            ใส่รูปแฟนแทนดาวเคราะห์ทั้งระบบสุริยะ
+          </p>
+        </div>
+      </div>
+
+      <!-- Days Counter -->
+      <div class="glass-panel rounded-2xl px-6 py-3 flex items-center gap-6 text-center">
+        <div>
+          <div id="daysCounter" class="text-2xl md:text-3xl font-extrabold text-pink-300 tracking-tight">365</div>
+          <div class="text-[10px] text-pink-200/60 uppercase tracking-widest">จำนวนวันที่รักกัน</div>
+        </div>
+        <div class="h-8 w-[1px] bg-pink-500/20"></div>
+        <div class="flex gap-3 text-xs md:text-sm font-semibold text-purple-200">
+          <div><span id="hoursCounter" class="text-pink-300">00</span> <span class="text-[10px] text-pink-200/60">ชม.</span></div>
+          <div><span id="minsCounter" class="text-pink-300">00</span> <span class="text-[10px] text-pink-200/60">นาที</span></div>
+          <div><span id="secsCounter" class="text-pink-300">00</span> <span class="text-[10px] text-pink-200/60">วิ</span></div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Center Interactive Hint -->
+    <div id="instructionHint" class="self-center glass-panel rounded-full px-6 py-2 text-xs md:text-sm text-pink-200/80 flex items-center gap-3 animate-bounce transition-opacity duration-1000">
+      <i class="fa-solid fa-hand-pointer text-pink-400"></i>
+      <span>คลิกที่รูปบนดาวเพื่อเปลี่ยนเป็นรูปแฟน | ลากเพื่อหมุนมุมมอง | สกรอลล์เพื่อซูม</span>
+    </div>
+
+    <footer class="w-full max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 pointer-events-auto">
+      
+      <!-- Speed & Music controls -->
+      <div class="glass-panel rounded-2xl px-4 py-2.5 flex items-center gap-3 w-full sm:w-auto justify-center">
+        <button id="toggleOrbitBtn" class="glass-button w-10 h-10 rounded-xl flex items-center justify-center text-pink-200" title="เล่น/หยุด วงโคจร">
+          <i id="orbitIcon" class="fa-solid fa-pause"></i>
+        </button>
+
+        <div class="flex items-center gap-2 px-2">
+          <i class="fa-solid fa-gauge-high text-xs text-pink-300/70"></i>
+          <input id="speedSlider" type="range" min="0.1" max="3" step="0.1" value="1" class="w-20 accent-pink-400 cursor-pointer">
+        </div>
+
+        <div class="h-6 w-[1px] bg-pink-500/20"></div>
+
+        <button id="toggleMusicBtn" class="glass-button px-3 h-10 rounded-xl flex items-center gap-2 text-xs text-pink-200">
+          <i id="musicIcon" class="fa-solid fa-music"></i>
+          <span id="musicStatusText">เพลงบรรยากาศ</span>
+        </button>
+      </div>
+
+      <!-- Quick Upload & Gallery buttons -->
+      <div class="glass-panel rounded-2xl px-4 py-2.5 flex items-center gap-3 w-full sm:w-auto justify-center">
+        <button id="resetViewBtn" class="glass-button px-4 h-10 rounded-xl flex items-center gap-2 text-xs text-pink-200">
+          <i class="fa-solid fa-arrows-to-dot"></i>
+          <span>รีเซ็ตมุมมอง</span>
+        </button>
+
+        <button id="openGalleryBtn" class="glass-button px-4 h-10 rounded-xl flex items-center gap-2 text-xs text-pink-200 bg-pink-500/20 border-pink-400/40">
+          <i class="fa-solid fa-camera"></i>
+          <span>อัปโหลดรูปแฟน/อัลบั้ม</span>
+        </button>
+      </div>
+    </footer>
+  </div>
+
+  <div id="memoryModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300">
+    <div class="glass-panel rounded-3xl max-w-lg w-full p-6 relative border border-pink-400/40 shadow-2xl transform scale-90 transition-transform duration-300" id="modalContent">
+      <button id="closeModalBtn" class="absolute top-4 right-4 w-9 h-9 rounded-full glass-button flex items-center justify-center text-pink-200 hover:text-white">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <div class="flex flex-col items-center text-center">
+        <span id="modalPlanetTag" class="px-3 py-1 rounded-full text-xs font-semibold bg-pink-500/20 text-pink-300 border border-pink-400/30 mb-3">
+          Sun • Central Star
+        </span>
+
+        <div class="relative group w-full aspect-square max-h-72 rounded-2xl overflow-hidden border-2 border-pink-300/40 shadow-xl mb-4 bg-black/40">
+          <img id="modalImage" src="" alt="Memory Photo" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80"></div>
+        </div>
+
+        <div class="flex items-center gap-2 text-pink-300/80 text-xs mb-1">
+          <i class="fa-regular fa-calendar-heart"></i>
+          <span id="modalDate">ความทรงจำพิเศษ</span>
+        </div>
+        <h3 id="modalTitle" class="text-xl font-bold text-white mb-2 font-romantic">
+          ชื่อดาวเคราะห์
+        </h3>
+
+        <p id="modalDescription" class="text-sm text-pink-100/80 leading-relaxed mb-6 max-h-28 overflow-y-auto px-2">
+          คำอธิบายความประทับใจ
+        </p>
+
+        <!-- Direct Upload Button -->
+        <label class="glass-button px-5 py-2.5 rounded-xl text-xs text-pink-200 cursor-pointer flex items-center gap-2 bg-pink-500/20 hover:bg-pink-500/40">
+          <i class="fa-solid fa-upload"></i>
+          <span>อัปโหลดรูปแฟนใส่ดาวดวงนี้</span>
+          <input type="file" id="modalFileInput" accept="image/*" class="hidden">
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div id="galleryModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300">
+    <div class="glass-panel rounded-3xl max-w-2xl w-full p-6 relative border border-pink-400/30 shadow-2xl max-h-[85vh] flex flex-col">
+      <div class="flex justify-between items-center border-b border-pink-500/20 pb-4 mb-4">
+        <div>
+          <h2 class="text-xl font-bold font-romantic text-pink-200">จัดการรูปภาพดวงดาวทั้งหมด (9 ดวง)</h2>
+          <p class="text-xs text-pink-200/60">กดอัปโหลดรูปแฟนเพื่อเปลี่ยนรูปภาพบนดวงอาทิตย์และดาวเคราะห์ทุกดวงได้เลยครับ</p>
+        </div>
+        <button id="closeGalleryBtn" class="w-9 h-9 rounded-full glass-button flex items-center justify-center text-pink-200">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div id="galleryList" class="overflow-y-auto space-y-3 pr-2 flex-grow">
+        <!-- Dynamically filled with planet items -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 9 Solar System Celestial Bodies with default photo placeholders
+    const defaultMemories = [
+      {
+        id: 'sun',
+        name: '☀️ ดวงอาทิตย์ (ดวงใจหลัก)',
+        tag: 'Central Star • Center of My Universe',
+        title: 'เธอคือศูนย์กลางของหัวใจ',
+        date: '365 วันที่ผ่านมา',
+        desc: 'เหมือนดวงอาทิตย์ที่คอยส่องแสงสว่างและมอบความอบอุ่นให้โลกของเค้าเสมอในทุกๆ วัน',
+        image: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=600&q=80',
+        radius: 42,
+        orbitRadius: 0,
+        speed: 0,
+        color: '#ff4d6d',
+        glow: 'rgba(255, 77, 109, 0.85)',
+        hasRings: false
+      },
+      {
+        id: 'mercury',
+        name: 'เมอร์คิวรี (ดาวพุธ)',
+        tag: '1st Orbit • First Glance',
+        title: 'ความประทับใจแรกเห็น',
+        date: 'จุดเริ่มต้นความรัก',
+        desc: 'จำได้ไหมว่าวันแรกที่เราสบตากัน หัวใจเต้นแรงแค่ไหน เป็นจุดเริ่มต้นของเรื่องราวดีๆ ทั้งหมด',
+        image: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=600&q=80',
+        radius: 16,
+        orbitRadius: 85,
+        speed: 0.022,
+        color: '#ffb3c1',
+        glow: 'rgba(255, 179, 193, 0.6)',
+        hasRings: false
+      },
+      {
+        id: 'venus',
+        name: 'วีนัส (ดาวศุกร์)',
+        tag: '2nd Orbit • Sweetest Date',
+        title: 'เดตแรกสุดหวานแหวว',
+        date: 'คาเฟ่แห่งความทรงจำ',
+        desc: 'เดตแรกที่เราไปนั่งคุยกัน ยิ้มจนแก้มปริ และรู้เลยว่าคนนี้แหละคือคนที่ใช่ที่สุด',
+        image: 'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=600&q=80',
+        radius: 20,
+        orbitRadius: 135,
+        speed: 0.016,
+        color: '#ff85a1',
+        glow: 'rgba(255, 133, 161, 0.6)',
+        hasRings: false
+      },
+      {
+        id: 'earth',
+        name: 'เอิร์ธ (โลกของเรา)',
+        tag: '3rd Orbit • Everyday Love',
+        title: 'โลกที่มีแค่เราสองคน',
+        date: 'ทุกๆ วันที่มีเธอ',
+        desc: 'ไม่ต้องมีอะไรอลังการ แค่เดินจับมือกัน กินของอร่อยด้วยกัน โลกทั้งใบก็สดใสขึ้นทันที',
+        image: 'https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?auto=format&fit=crop&w=600&q=80',
+        radius: 23,
+        orbitRadius: 190,
+        speed: 0.012,
+        color: '#70a1ff',
+        glow: 'rgba(112, 161, 255, 0.6)',
+        hasRings: false
+      },
+      {
+        id: 'mars',
+        name: 'มาร์ส (ดาวอังคาร)',
+        tag: '4th Orbit • Passion & Care',
+        title: 'กำลังใจในวันที่เหนื่อยล้า',
+        date: 'คอยซัพพอร์ตกันเสมอ',
+        desc: 'ขอบคุณนะที่คอยอยู่ข้างๆ ยิ้มให้ และบอกว่า "ไม่เป็นไรนะ" ในวันที่เค้าเหนื่อยที่สุด',
+        image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80',
+        radius: 18,
+        orbitRadius: 245,
+        speed: 0.009,
+        color: '#ff6b6b',
+        glow: 'rgba(255, 107, 107, 0.6)',
+        hasRings: false
+      },
+      {
+        id: 'jupiter',
+        name: 'จูปีเตอร์ (ดาวพฤหัสบดี)',
+        tag: '5th Orbit • Giant Happiness',
+        title: 'ความสุขที่ยิ่งใหญ่',
+        date: 'ทริปท่องเที่ยวสุดประทับใจ',
+        desc: 'ทริปต่างจังหวัดครั้งแรกด้วยกัน รอยยิ้มและเสียงหัวเราะของเธอทำให้ทริปนี้น่าจดจำไม่มีวันลืม',
+        image: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=600&q=80',
+        radius: 32,
+        orbitRadius: 315,
+        speed: 0.006,
+        color: '#feca57',
+        glow: 'rgba(254, 202, 87, 0.6)',
+        hasRings: false
+      },
+      {
+        id: 'saturn',
+        name: 'แซเทิร์น (ดาวเสาร์)',
+        tag: '6th Orbit • Ring of Eternal Love',
+        title: 'วงแหวนแห่งความผูกพัน',
+        date: 'สัญญาของสองเรา',
+        desc: 'เหมือนวงแหวนดาวเสาร์ที่ล้อมรอบดาวอย่างสวยงาม ความรักและความผูกพันของเราก็จะคงอยู่ตลอดไปนะ',
+        image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=600&q=80',
+        radius: 27,
+        orbitRadius: 385,
+        speed: 0.004,
+        color: '#ff9ff3',
+        glow: 'rgba(255, 159, 243, 0.7)',
+        hasRings: true
+      },
+      {
+        id: 'uranus',
+        name: 'ยูเรนัส (ดาวยูเรนัส)',
+        tag: '7th Orbit • Unique Spark',
+        title: 'ความพิเศษที่ไม่เหมือนใคร',
+        date: 'เรื่องน่ารักๆ ของเธอ',
+        desc: 'ชอบเวลาเธอทำท่าทางตลกๆ หรือหัวเราะจนตาหยี เธอเป็นคนที่มีเสน่ห์น่ารักที่สุดในโลกเลย',
+        image: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=80',
+        radius: 22,
+        orbitRadius: 445,
+        speed: 0.003,
+        color: '#48dbfb',
+        glow: 'rgba(72, 219, 251, 0.6)',
+        hasRings: false
+      },
+      {
+        id: 'neptune',
+        name: 'เนปจูน (ดาวเนปจูน)',
+        tag: '8th Orbit • Endless Future',
+        title: 'อนาคตยาวไกลไปด้วยกัน',
+        date: 'ก้าวสู่อนาคต',
+        desc: '1 ปีเป็นแค่จุดเริ่มต้นนะ ยังมีดาวอีกหลายดวงและปีต่อๆ ไปที่เราจะก้าวไปสร้างความทรงจำด้วยกันครับ 💕',
+        image: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=600&q=80',
+        radius: 21,
+        orbitRadius: 505,
+        speed: 0.002,
+        color: '#54a0ff',
+        glow: 'rgba(84, 160, 255, 0.6)',
+        hasRings: false
+      }
+    ];
+
+    let memories = JSON.parse(localStorage.getItem('anniversary_memories_3d')) || defaultMemories;
+
+    const canvas = document.getElementById('universeCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let width, height;
+    let scale = 1;
+    let targetScale = 1;
+    let offsetX = 0;
+    let offsetY = 0;
+    let targetOffsetX = 0;
+    let targetOffsetY = 0;
+
+    let angleX = 0.5; // Tilt 3D perspective angle
+    let isOrbiting = true;
+    let orbitSpeedMultiplier = 1;
+
+    const imageCache = {};
+
+    function preloadImages() {
+      memories.forEach(m => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.src = m.image;
+        img.onload = () => { imageCache[m.id] = img; };
+      });
+    }
+
+    function resizeCanvas() {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width * window.devicePixelRatio;
+      canvas.height = height * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // Background Stars
+    const stars = Array.from({ length: 300 }, () => ({
+      x: (Math.random() - 0.5) * 2400,
+      y: (Math.random() - 0.5) * 2400,
+      size: Math.random() * 1.8 + 0.4,
+      alpha: Math.random() * 0.8 + 0.2,
+      twinkleSpeed: Math.random() * 0.02 + 0.005
+    }));
+
+    // Floating Cosmic Hearts
+    const cosmicHearts = Array.from({ length: 30 }, () => ({
+      x: (Math.random() - 0.5) * 1400,
+      y: (Math.random() - 0.5) * 1400,
+      size: Math.random() * 10 + 8,
+      speedY: -(Math.random() * 0.35 + 0.1),
+      alpha: Math.random() * 0.5 + 0.2
+    }));
+
+    memories.forEach((m, idx) => {
+      m.currentAngle = (idx * Math.PI * 2) / (memories.length - 1 || 1);
+    });
+
+    function render() {
+      scale += (targetScale - scale) * 0.08;
+      offsetX += (targetOffsetX - offsetX) * 0.08;
+      offsetY += (targetOffsetY - offsetY) * 0.08;
+
+      ctx.clearRect(0, 0, width, height);
+      ctx.save();
+
+      const centerX = width / 2 + offsetX;
+      const centerY = height / 2 + offsetY;
+
+      // 1. Draw Starfield
+      stars.forEach(star => {
+        star.alpha += Math.sin(Date.now() * star.twinkleSpeed) * 0.01;
+        const starX = centerX + star.x * (scale * 0.5);
+        const starY = centerY + star.y * (scale * 0.5);
+        
+        if (starX >= 0 && starX <= width && starY >= 0 && starY <= height) {
+          ctx.beginPath();
+          ctx.arc(starX, starY, star.size, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 230, 245, ${Math.max(0.1, Math.min(1, star.alpha))})`;
+          ctx.fill();
+        }
+      });
+
+      // 2. Floating Hearts
+      cosmicHearts.forEach(h => {
+        h.y += h.speedY;
+        if (h.y < -800) h.y = 800;
+        const hX = centerX + h.x * scale;
+        const hY = centerY + h.y * scale;
+
+        ctx.font = `${h.size * scale}px sans-serif`;
+        ctx.fillStyle = `rgba(255, 182, 193, ${h.alpha})`;
+        ctx.fillText('💖', hX, hY);
+      });
+
+      // 3. Draw Dashed Orbit Rings
+      memories.forEach(m => {
+        if (m.orbitRadius > 0) {
+          ctx.beginPath();
+          ctx.ellipse(
+            centerX, 
+            centerY, 
+            m.orbitRadius * scale, 
+            m.orbitRadius * scale * angleX, 
+            0, 0, Math.PI * 2
+          );
+          ctx.strokeStyle = m.glow || 'rgba(255, 192, 203, 0.25)';
+          ctx.lineWidth = 1.2 * scale;
+          ctx.setLineDash([5, 7]);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+      });
+
+      // 4. Calculate Depth and Screen Coordinates
+      const renderList = memories.map(m => {
+        if (isOrbiting && m.orbitRadius > 0) {
+          m.currentAngle += m.speed * orbitSpeedMultiplier;
+        }
+
+        const x3D = Math.cos(m.currentAngle) * m.orbitRadius;
+        const y3D = Math.sin(m.currentAngle) * m.orbitRadius;
+        
+        const screenX = centerX + x3D * scale;
+        const screenY = centerY + (y3D * angleX) * scale;
+        const depth = y3D;
+
+        const depthScale = 0.85 + (y3D / 500) * 0.3;
+        const currentRadius = m.radius * scale * depthScale;
+
+        return { ...m, screenX, screenY, currentRadius, depth };
+      });
+
+      renderList.sort((a, b) => a.depth - b.depth);
+
+      // 5. Draw Sun & Planet Photos with Glowing Frames
+      renderList.forEach(m => {
+        ctx.save();
+
+        // Planet Outer Glow
+        const glowGradient = ctx.createRadialGradient(
+          m.screenX, m.screenY, m.currentRadius * 0.5,
+          m.screenX, m.screenY, m.currentRadius * 1.9
+        );
+        glowGradient.addColorStop(0, m.glow || 'rgba(255, 105, 180, 0.8)');
+        glowGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+        ctx.beginPath();
+        ctx.arc(m.screenX, m.screenY, m.currentRadius * 1.9, 0, Math.PI * 2);
+        ctx.fillStyle = glowGradient;
+        ctx.fill();
+
+        // Special Saturn Ring Effect
+        if (m.hasRings) {
+          ctx.save();
+          ctx.beginPath();
+          ctx.ellipse(
+            m.screenX, m.screenY, 
+            m.currentRadius * 2.2, m.currentRadius * 0.8, 
+            -0.2, 0, Math.PI * 2
+          );
+          ctx.strokeStyle = 'rgba(255, 182, 193, 0.8)';
+          ctx.lineWidth = 5 * scale;
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        // Circular Border Ring
+        ctx.beginPath();
+        ctx.arc(m.screenX, m.screenY, m.currentRadius + 3 * scale, 0, Math.PI * 2);
+        ctx.strokeStyle = m.color || '#ffb6c1';
+        ctx.lineWidth = 2.5 * scale;
+        ctx.shadowColor = m.color;
+        ctx.shadowBlur = 14 * scale;
+        ctx.stroke();
+
+        // Photo Masking
+        ctx.beginPath();
+        ctx.arc(m.screenX, m.screenY, m.currentRadius, 0, Math.PI * 2);
+        ctx.clip();
+
+        const img = imageCache[m.id];
+        if (img && img.complete) {
+          ctx.drawImage(
+            img, 
+            m.screenX - m.currentRadius, 
+            m.screenY - m.currentRadius, 
+            m.currentRadius * 2, 
+            m.currentRadius * 2
+          );
+        } else {
+          ctx.fillStyle = m.color || '#ff4d6d';
+          ctx.fill();
+        }
+
+        ctx.restore();
+
+        // Name Label below Planet
+        ctx.font = `600 ${Math.max(10, 11 * scale)}px Sarabun`;
+        ctx.fillStyle = 'rgba(255, 230, 245, 0.95)';
+        ctx.textAlign = 'center';
+        ctx.shadowColor = 'rgba(0,0,0,0.85)';
+        ctx.shadowBlur = 5;
+        ctx.fillText(m.name.split('(')[0].trim(), m.screenX, m.screenY + m.currentRadius + 17 * scale);
+
+        m.computedX = m.screenX;
+        m.computedY = m.screenY;
+        m.computedRadius = m.currentRadius;
+      });
+
+      ctx.restore();
+      requestAnimationFrame(render);
+    }
+
+    preloadImages();
+    requestAnimationFrame(render);
+
+    let isDragging = false;
+    let startX, startY;
+
+    canvas.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      startX = e.clientX - targetOffsetX;
+      startY = e.clientY - targetOffsetY;
+      document.getElementById('instructionHint').style.opacity = '0';
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      targetOffsetX = e.clientX - startX;
+      targetOffsetY = e.clientY - startY;
+    });
+
+    window.addEventListener('mouseup', () => { isDragging = false; });
+
+    canvas.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
+      targetScale = Math.min(Math.max(0.4, targetScale * zoomFactor), 2.8);
+    }, { passive: false });
+
+    // Click Planet to Open Memory View
+    canvas.addEventListener('click', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+
+      const clicked = memories.find(m => {
+        if (!m.computedX) return false;
+        const dx = clickX - m.computedX;
+        const dy = clickY - m.computedY;
+        return Math.sqrt(dx * dx + dy * dy) <= m.computedRadius + 12;
+      });
+
+      if (clicked) {
+        openMemoryModal(clicked);
+      }
+    });
+
+    let currentSelectedPlanetId = null;
+
+    const memoryModal = document.getElementById('memoryModal');
+    const modalContent = document.getElementById('modalContent');
+
+    function openMemoryModal(planet) {
+      currentSelectedPlanetId = planet.id;
+      document.getElementById('modalPlanetTag').textContent = planet.tag;
+      document.getElementById('modalTitle').textContent = planet.title;
+      document.getElementById('modalDate').textContent = planet.date;
+      document.getElementById('modalDescription').textContent = planet.desc;
+      document.getElementById('modalImage').src = planet.image;
+
+      memoryModal.classList.remove('opacity-0', 'pointer-events-none');
+      modalContent.classList.remove('scale-90');
+      modalContent.classList.add('scale-100');
+
+      targetOffsetX = (width / 2) - planet.computedX + offsetX;
+      targetOffsetY = (height / 2) - planet.computedY + offsetY;
+      targetScale = 1.35;
+    }
+
+    function closeModal() {
+      memoryModal.classList.add('opacity-0', 'pointer-events-none');
+      modalContent.classList.remove('scale-100');
+      modalContent.classList.add('scale-90');
+    }
+
+    document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+
+    // Replace photo for selected planet
+    document.getElementById('modalFileInput').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file && currentSelectedPlanetId) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const newImgUrl = event.target.result;
+          const planet = memories.find(m => m.id === currentSelectedPlanetId);
+          if (planet) {
+            planet.image = newImgUrl;
+            document.getElementById('modalImage').src = newImgUrl;
+            
+            const img = new Image();
+            img.src = newImgUrl;
+            img.onload = () => { imageCache[planet.id] = img; };
+
+            saveMemoriesToStorage();
+            renderGalleryList();
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Gallery Manager Modal
+    const galleryModal = document.getElementById('galleryModal');
+    
+    document.getElementById('openGalleryBtn').addEventListener('click', () => {
+      renderGalleryList();
+      galleryModal.classList.remove('opacity-0', 'pointer-events-none');
+    });
+
+    document.getElementById('closeGalleryBtn').addEventListener('click', () => {
+      galleryModal.classList.add('opacity-0', 'pointer-events-none');
+    });
+
+    function renderGalleryList() {
+      const listContainer = document.getElementById('galleryList');
+      listContainer.innerHTML = '';
+
+      memories.forEach(m => {
+        const card = document.createElement('div');
+        card.className = 'glass-panel p-3.5 rounded-2xl flex items-center gap-4 border border-pink-400/20';
+        card.innerHTML = `
+          <img src="${m.image}" class="w-16 h-16 rounded-xl object-cover border border-pink-300/40 flex-shrink-0">
+          <div class="flex-grow min-w-0">
+            <h4 class="font-bold text-sm text-pink-200 truncate">${m.name}</h4>
+            <p class="text-xs text-pink-100/70 truncate">${m.title}</p>
+            <span class="text-[10px] text-pink-300/60">${m.date}</span>
+          </div>
+          <label class="glass-button px-3 py-1.5 rounded-lg text-xs text-pink-200 cursor-pointer flex-shrink-0 flex items-center gap-1.5">
+            <i class="fa-solid fa-upload"></i> เปลี่ยนรูป
+            <input type="file" accept="image/*" class="hidden" onchange="uploadPhotoFromGallery(event, '${m.id}')">
+          </label>
+        `;
+        listContainer.appendChild(card);
+      });
+    }
+
+    window.uploadPhotoFromGallery = function(event, planetId) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const newImgUrl = e.target.result;
+          const planet = memories.find(m => m.id === planetId);
+          if (planet) {
+            planet.image = newImgUrl;
+            const img = new Image();
+            img.src = newImgUrl;
+            img.onload = () => { imageCache[planet.id] = img; };
+
+            saveMemoriesToStorage();
+            renderGalleryList();
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+
+    function saveMemoriesToStorage() {
+      localStorage.setItem('anniversary_memories_3d', JSON.stringify(memories));
+    }
+
+    const toggleOrbitBtn = document.getElementById('toggleOrbitBtn');
+    const orbitIcon = document.getElementById('orbitIcon');
+
+    toggleOrbitBtn.addEventListener('click', () => {
+      isOrbiting = !isOrbiting;
+      orbitIcon.className = isOrbiting ? 'fa-solid fa-pause' : 'fa-solid fa-play';
+    });
+
+    document.getElementById('speedSlider').addEventListener('input', (e) => {
+      orbitSpeedMultiplier = parseFloat(e.target.value);
+    });
+
+    document.getElementById('resetViewBtn').addEventListener('click', () => {
+      targetScale = 1;
+      targetOffsetX = 0;
+      targetOffsetY = 0;
+    });
+
+    // Romantic Synth Audio Generator
+    let audioCtx = null;
+    let isPlayingMusic = false;
+    let musicInterval = null;
+
+    function playRomanticMelody() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+
+      const notes = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
+      let noteIdx = 0;
+
+      musicInterval = setInterval(() => {
+        if (!isPlayingMusic) return;
+
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(notes[noteIdx % notes.length], audioCtx.currentTime);
+        
+        gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 2.5);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + 2.5);
+
+        noteIdx = (noteIdx + Math.floor(Math.random() * 3) + 1) % notes.length;
+      }, 1200);
+    }
+
+    const toggleMusicBtn = document.getElementById('toggleMusicBtn');
+    const musicIcon = document.getElementById('musicIcon');
+    const musicStatusText = document.getElementById('musicStatusText');
+
+    toggleMusicBtn.addEventListener('click', () => {
+      isPlayingMusic = !isPlayingMusic;
+      if (isPlayingMusic) {
+        musicIcon.className = 'fa-solid fa-volume-high text-pink-300';
+        musicStatusText.textContent = 'เปิดเพลงรัก';
+        playRomanticMelody();
+      } else {
+        musicIcon.className = 'fa-solid fa-music';
+        musicStatusText.textContent = 'เปิดเพลง';
+        if (musicInterval) clearInterval(musicInterval);
+      }
+    });
+
+    // 1 Year Elapsed Counter
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 365);
+
+    function updateAnniversaryCounter() {
+      const now = new Date();
+      const diff = now - startDate;
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const mins = Math.floor((diff / (1000 * 60)) % 60);
+      const secs = Math.floor((diff / 1000) % 60);
+
+      document.getElementById('daysCounter').textContent = days;
+      document.getElementById('hoursCounter').textContent = String(hours).padStart(2, '0');
+      document.getElementById('minsCounter').textContent = String(mins).padStart(2, '0');
+      document.getElementById('secsCounter').textContent = String(secs).padStart(2, '0');
+    }
+
+    setInterval(updateAnniversaryCounter, 1000);
+    updateAnniversaryCounter();
+  </script>
+</body>
+</html>
